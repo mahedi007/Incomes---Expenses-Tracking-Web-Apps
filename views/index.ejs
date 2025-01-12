@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Incomes & Expenses</title>
+    <link rel="stylesheet" href="/views/styles.css">
+
+</head>
+<body>
+
+       <div class="sidebar">
+            <div class="profile">
+                <img src="https://avatars.githubusercontent.com/u/11696138?v=4" alt="Profile Picture">
+                <h2>Income & Expenses</h2>
+            </div>
+            <div class="nav">
+                <a href="#" class="active">Balance</a>
+                <a href="#summary">Summary</a>
+                <a href="#input-panel">Input Panel</a>
+                <a href="#editing-panel">Editing Panel</a>
+            </div>
+        </div>
+    <div class="main-content">  
+        <div class="dashboard-grid"> 
+        <div class="title-section">
+            <h1>Incomes and Expenses Tracker</h1>
+        </div>
+        <div class="card-container top-section">
+            <div class="card card-left">
+                <h2 class="monthh2">Month</h2>
+                <form action="/" method="GET">
+                    <label for="select-month">Select Month:</label>
+                    <select name="month" id="select-month" required>
+                        <% months.forEach(month => { %>
+                            <option value="<%= month.month %>" <%= month.month === selectedMonth ? 'selected' : '' %> >
+                                <%= month.month %>
+                            </option>
+                        <% }) %>
+                    </select>
+                    <button type="submit">Show Data</button>
+                </form>
+            </div>
+
+            <div class="card card-right">
+                <h2 class="balanceh2">Balance</h2>
+                <div class="balance-section">
+                    <p class="select-month" data-month="<%= selectedMonth %>"><%= selectedMonth %></p>
+                    <p class="current-b">Current Balance</p>
+                    <h4 class="f-b">Tk. <%= finalBalance %></h4>
+                    <p class="total-e">Total earnigs in this month</p>
+                    <p class="amount-large">Tk. <%= monthData[selectedMonth] && monthData[selectedMonth].total ? monthData[selectedMonth].total : 'N/A' %></p>
+                </div>
+            </div>
+            <div id="summary" class="card card-middle">
+                <h2 class="sumh2">Summary</h2>
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <button class="accordion-button" onclick="toggleAccordion('expense-lists')">
+                            Lists of Expense
+                        </button>
+                        <div class="accordion-content" id="accordion-content-expense-lists">
+                            <% if (dailyExpenses && dailyExpenses.length > 0) { %>
+                                <ul>
+                                    <% dailyExpenses.forEach(expense => { %>
+                                        <li>
+                                            <div class="expense-list">
+                                                <h5 class="expense-h5"><%= expense.label %>:</h5>
+                                                <p class="expense-p">Amount: Tk. <%= expense.value %></p>
+                                                <p class="expense-p2" data-date="<%= expense.date %>">Date: <%= expense.date %></p>
+                                            </div>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } else { %>
+                                <p>No daily expenses recorded for <%= selectedMonth %>.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <button class="accordion-button" onclick="toggleAccordion('income-lists')">
+                           Lists of Income
+                        </button>
+                        <div class="accordion-content" id="accordion-content-income-lists">
+                            <% if (monthData && monthData[selectedMonth] && monthData[selectedMonth].inputs.length > 0) { %>
+                                <ul>
+                                    <% monthData[selectedMonth].inputs.forEach(input => { %>
+                                        <li>
+                                            <div class="income-list">
+                                                <h5 class="income-h5"><%= input.label %>:</h5>
+                                                <p class="income-p">Tk. <%= input.value %></p>
+                                            </div>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } else { %>
+                                <p>No income recorded for <%= selectedMonth %>.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <div id="input-panel" class="title-section">
+            <h1>Input Panel</h1>
+        </div>
+        <div class="card-container middle-section">
+            <div class="card card-middle">
+                <h2 class="earnh2">Earnigs</h2>
+                <form action="/submit" method="POST" id="dynamic-form">
+                    <div>
+                        <label for="input-month">Select Month:</label>
+                        <input type="month" name="month" id="input-month" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="label1">Income Source:</label>
+                        <input type="text" name="label1" id="label1" placeholder="Enter Source" required>
+                        <label for="value1">Amount:</label>
+                        <input type="text" name="value1" id="value1" placeholder="Enter Amount" required>
+                    </div>
+                    <div id="dynamic-fields-container"></div>
+                    <button type="button" id="add-more-fields">Add Extra Income</button>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+    
+            <div class="card card-middle">
+                <h2 class="expenh2">Daily Expenses</h2>
+                <form action="/daily-expense/<%= selectedMonth %>" method="POST">
+                    <div>
+                        <label for="date">Select Date:</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div>
+                        <label for="label">Expense Name:</label>
+                        <input type="text" id="label" name="label" required>
+                    </div>
+                    <div>
+                        <label for="value">Expense Amount:</label>
+                        <input type="number" id="value" name="value" required>
+                    </div>
+                    <input type="hidden" name="month" value="<%= selectedMonth %>" />
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+            
+        </div> 
+
+        <div id="editing-panel" class="title-section">
+            <h1>Editing Panel</h1>
+        </div>
+        <div class="card-container bottom-section">
+            <div class="card card-bottom">
+                <h2>Income Lists</h2>
+                <% if (monthData[selectedMonth] && monthData[selectedMonth].inputs.length > 0) { %>
+                    <ul>
+                        <% monthData[selectedMonth].inputs.forEach(input => { %>
+                            <li>
+                                <form action="/edit/<%= input.id %>" method="POST">
+                                    <label class="income-source" for="label_<%= input.id %>">Income Source:</label>
+                                    <input type="text" name="label" id="label_<%= input.id %>" value="<%= input.label %>" required>
+                                    <label class="income-amount" for="value_<%= input.id %>">Amount:</label>
+                                    <input type="text" name="value" id="value_<%= input.id %>" value="<%= input.value %>" required>
+                                    <button class="edit-b" type="submit">Save Income</button>
+                                </form>
+                                <form action="/delete/<%= input.id %>" method="POST">
+                                    <button class="delete-b" type="submit">Delete</button>
+                                </form>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <p>No inputs available for <%= selectedMonth %>.</p>
+                <% } %>
+            </div>
+
+            <div class="card card-bottom">
+                <h2>Expense Lists</h2>
+                <% if (dailyExpenses && dailyExpenses.length > 0) { %>
+                    <ul>
+                        <% dailyExpenses.forEach(expense => { %>
+                            <li>
+                                <div class="expense-list"><h5 class="expense-h5"><%= expense.label %>:</h5><p class="expense-p"> Tk. <%= expense.value %> </p> <p class="expense-p2">on <%= expense.date %> </p></div>
+                                
+                                <form action="/edit-daily-expense/<%= expense.id %>" method="POST">
+                                    <input type="text" name="label" value="<%= expense.label %>" required>
+                                    <input type="number" name="value" value="<%= expense.value %>" required>
+                                    <button class="edit-b" type="submit">Save Expense</button>
+                                </form>
+                                <form action="/delete-daily-expense/<%= expense.id %>" method="POST">
+                                    <button class="delete-b" type="submit">Delete</button>
+                                </form>
+                           
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <p>No daily expenses recorded for <%= selectedMonth %>.</p>
+                <% } %>
+            </div>
+        </div>
+        
+    </div> 
+</div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
